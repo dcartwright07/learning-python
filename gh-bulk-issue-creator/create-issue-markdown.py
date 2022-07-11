@@ -1,13 +1,9 @@
-# Create issue in bulk using the GitHub CLI. You would need to be in the repo folder for GitHub CLI to know which repo to create issues for.
-# Heading 1 are used to get the issue titles and the content between the Heading 1's are inserted as the body of the issue.
-
 import markdown
 from bs4 import BeautifulSoup
 from markdownify import markdownify
 import os
 
 # TODO: Add prompt for file path for where to create the issues from.
-# TODO: Add support for adding issues to a milestone
 
 def get_issue_data():
     html = markdown.markdown(open('test-issues.md').read())
@@ -21,6 +17,8 @@ def get_issue_data():
         for tag in h1.next_siblings:
             if tag.name == 'h1':
                 break
+            elif tag.name == 'h6':
+                temp_issue_data.insert(1, tag.string)
             elif tag.name:
                 temp_issue_data.append(tag)
 
@@ -30,7 +28,8 @@ def get_issue_data():
 
 def create_issue(issue):
     title = issue[0]
-    del issue[0] # Remove the title
+    milestone = issue[1]
+    issue = issue[2:] # Remove title and milestone
 
     body = ''
     for tag in issue:
@@ -38,7 +37,7 @@ def create_issue(issue):
 
     md = markdownify(body)
 
-    os.system(f'gh issue create -t "{title}" -b "{md}"')
+    os.system(f'gh issue create -t "{title}" -b "{md}" -m "{milestone}"')
     print(f'{title} has been created')
 
 def main():
