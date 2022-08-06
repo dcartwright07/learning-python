@@ -3,10 +3,11 @@ from bs4 import BeautifulSoup
 from markdownify import markdownify
 import os
 
-# TODO: Add prompt for file path for where to create the issues from.
 
-def get_issue_data():
-    html = markdown.markdown(open('test-issues.md').read())
+def get_issue_data(filename):
+    with open(filename) as file:
+        html = markdown.markdown(file.read())
+
     parsed_html = BeautifulSoup(html, 'html.parser')
 
     h1s = parsed_html.find_all('h1')
@@ -26,10 +27,9 @@ def get_issue_data():
 
     return issue_data
 
+
 def create_issue(issue):
-    title = issue[0]
-    milestone = issue[1]
-    issue = issue[2:] # Remove title and milestone
+    title, milestone, *issue = issue
 
     body = ''
     for tag in issue:
@@ -40,11 +40,14 @@ def create_issue(issue):
     os.system(f'gh issue create -t "{title}" -b "{md}" -m "{milestone}"')
     print(f'{title} has been created')
 
+
 def main():
-    issues = get_issue_data()
+    filename = input("Which file do you want to use?")
+    issues = get_issue_data(filename)
 
     for issue in issues:
         create_issue(issue)
+
 
 if __name__ == '__main__':
     main()
